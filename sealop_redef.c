@@ -5,6 +5,8 @@
 #include <linux/sched.h>
 #include <asm/unistd.h>
 
+#include "sldlib.h"
+
 #ifdef CONFIG_IA32_EMULATION
 #include "unistd_32.h"
 #endif
@@ -213,10 +215,56 @@ static int __init hook_init(void) {
     /* hook seal */
 #ifdef __NR_seal32
     real_seal = sys_call_table[__NR_seal32];
+    real_is_sealed = sys_call_table[__NR_is_sealed32];
+    real_sld_create_key = sys_call_table[__NR_sld_create_key32];
+    real_sld_open = sys_call_table[__NR_sld_open32];
+    real_sld_ssl_connect = sys_call_table[__NR_sld_ssl_connect32];
+    real_sld_ssl_read = sys_call_table[__NR_sld_ssl_read32];
+    real_sld_ssl_write = sys_call_table[__NR_sld_ssl_write32];
+    real_sld_ssl_disconnect = sys_call_table[__NR_sld_ssl_disconnect32];
+    real_sld_post = sys_call_table[__NR_sld_put32];
+    real_sld_put = sys_call_table[__NR_sld_put32];
+    real_sld_get = sys_call_table[__NR_sld_get32];
+    real_sld_delete = sys_call_table[__NR_sld_delete32];
+
     sys_call_table[__NR_seal32] = hooked_seal;
+    sys_call_table[__NR_is_sealed32] = hooked_is_sealed;
+    sys_call_table[__NR_sld_create_key32] = hooked_create_key;
+    sys_call_table[__NR_sld_open32] = hooked_sld_open;
+    sys_call_table[__NR_sld_ssl_connect32] = hooked_sld_ssl_connect;
+    sys_call_table[__NR_sld_ssl_read32] = hooked_sld_ssl_read;
+    sys_call_table[__NR_sld_ssl_write32] = hooked_sld_ssl_write;
+    sys_call_table[__NR_sld_ssl_disconnect32] = hooked_sld_ssl_disconnect;
+    sys_call_table[__NR_sld_post32] = hooked_post;
+    sys_call_table[__NR_sld_put32] = hooked_sld_put;
+    sys_call_table[__NR_sld_get32] = hooked_sld_get;
+    sys_call_table[__NR_sld_delete32] = hooked_sld_delete;
 #else
     real_seal = sys_call_table[__NR_seal];
+    real_is_sealed = sys_call_table[__NR_is_sealed];
+    real_sld_create_key = sys_call_table[__NR_sld_create_key];
+    real_sld_open = sys_call_table[__NR_sld_open];
+    real_sld_ssl_connect = sys_call_table[__NR_sld_ssl_connect];
+    real_sld_ssl_read = sys_call_table[__NR_sld_ssl_read];
+    real_sld_ssl_write = sys_call_table[__NR_sld_ssl_write];
+    real_sld_ssl_disconnect = sys_call_table[__NR_sld_ssl_disconnect];
+    real_sld_post = sys_call_table[__NR_sld_put];
+    real_sld_put = sys_call_table[__NR_sld_put];
+    real_sld_get = sys_call_table[__NR_sld_get];
+    real_sld_delete = sys_call_table[__NR_sld_delete];
+
     sys_call_table[__NR_seal] = hooked_seal;
+    sys_call_table[__NR_is_sealed] = hooked_is_sealed;
+    sys_call_table[__NR_sld_create_key] = hooked_sld_create_key;
+    sys_call_table[__NR_sld_open] = hooked_sld_open;
+    sys_call_table[__NR_sld_ssl_connect] = hooked_sld_ssl_connect;
+    sys_call_table[__NR_sld_ssl_read] = hooked_sld_ssl_read;
+    sys_call_table[__NR_sld_ssl_write] = hooked_sld_ssl_write;
+    sys_call_table[__NR_sld_ssl_disconnect] = hooked_sld_ssl_disconnect;
+    sys_call_table[__NR_sld_post] = hooked_sld_post;
+    sys_call_table[__NR_sld_put] = hooked_sld_put;
+    sys_call_table[__NR_sld_get] = hooked_sld_get;
+    sys_call_table[__NR_sld_delete] = hooked_sld_delete;
 #endif
     /***************/
 
@@ -227,8 +275,31 @@ static void __exit hook_exit(void) {
     /* unhook seal */
 #ifdef __NR_seal32
     sys_call_table[__NR_seal32] = real_seal;
+    sys_call_table[__NR_is_sealed32] = real_is_sealed;
+    sys_call_table[__NR_sld_create_key32] = real_sld_create_key;
+    sys_call_table[__NR_sld_open32] = real_sld_open;
+    sys_call_table[__NR_sld_ssl_connect32] = real_sld_ssl_connect;
+    sys_call_table[__NR_sld_ssl_read32] = real_sld_ssl_read;
+    sys_call_table[__NR_sld_ssl_write32] = real_sld_ssl_write;
+    sys_call_table[__NR_sld_ssl_disconnect32] = real_sld_ssl_disconnect;
+    sys_call_table[__NR_sld_post32] = real_sld_post;
+    sys_call_table[__NR_sld_put32] = real_sld_put;
+    sys_call_table[__NR_sld_get32] = real_sld_get;
+    sys_call_table[__NR_sld_delete32] = real_sld_delete;
+
 #else
     sys_call_table[__NR_seal] = real_seal;
+    sys_call_table[__NR_is_sealed] = real_is_sealed;
+    sys_call_table[__NR_sld_create_key] = real_sld_create_key;
+    sys_call_table[__NR_sld_open] = real_sld_open;
+    sys_call_table[__NR_sld_ssl_connect] = real_sld_ssl_connect;
+    sys_call_table[__NR_sld_ssl_read] = real_sld_ssl_read;
+    sys_call_table[__NR_sld_ssl_write] = real_sld_ssl_write;
+    sys_call_table[__NR_sld_ssl_disconnect] = real_sld_ssl_disconnect;
+    sys_call_table[__NR_sld_post] = real_sld_post;
+    sys_call_table[__NR_sld_put] = real_sld_put;
+    sys_call_table[__NR_sld_get] = real_sld_get;
+    sys_call_table[__NR_sld_delete] = real_sld_delete;
 #endif
     /*****************/
 
